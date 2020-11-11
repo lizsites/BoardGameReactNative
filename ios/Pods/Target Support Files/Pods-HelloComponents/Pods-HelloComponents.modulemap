@@ -1,0 +1,6 @@
+module Pods_HelloComponents {
+  umbrella header "Pods-HelloComponents-umbrella.h"
+
+  export *
+  module * { export * }
+}

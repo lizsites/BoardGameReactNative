@@ -1,0 +1,12 @@
+{
+  "name": "HelloComponents",
+  "displayName": "HelloComponents",
+  "expo": {
+    "name": "HelloComponents",
+    "slug": "HelloComponents",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
