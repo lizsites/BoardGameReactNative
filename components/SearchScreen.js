@@ -2,9 +2,10 @@ import React, {useState} from 'react';
 import { Button, StyleSheet, Modal, Switch, ScrollView, FlatList, TextInput, Image, Text, View, Alert, TouchableHighlightBase} from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { useScreens } from 'react-native-screens';
+import { Descriptions } from './Descriptions';
+import { createStackNavigator } from '@react-navigation/stack';
 
-
-const url = 'https://api.boardgameatlas.com/api/search?name=';
+const url = 'https://api.boardgameatlas.com/api/search?limit=7&order_by=popularity&name=';
 const clientId = 'v0EMyOsTcG';
 const viewedBoardGames = []
 const images = []
@@ -14,10 +15,23 @@ function boardGame(key, name, description, images){
   this.description = description;
   this.images = images;
 }
+const Stack = createStackNavigator();
 
-// const warOfTheRing = new boardGame(viewedBoardGames.length, "War of the Ring", "is war of the ring good? Yes!!", {})
+export function BoardStack(){
+  return(
+  <Stack.Navigator>
 
-export function SearchScreen({navigation, route}){
+    <Stack.Screen name="Search Screen" component={SearchScreen} 
+      initialParams={{name : "", description : "", isDark : false}}/>
+
+    <Stack.Screen name="Details" component={Descriptions}
+      initialParams={{isDark : false, gameDetails : {}}}/>
+
+  </Stack.Navigator>
+  );
+}
+
+function SearchScreen({navigation, route}){
 
   const {isDark, name, description} = route.params;
   const [userInput, setName] = useState("");
@@ -29,34 +43,51 @@ export function SearchScreen({navigation, route}){
   Flesh this out!
   */
   const renderItem = ({item}) =>(
-    <View>
+    
+    <View style={{marginTop : 8, marginBottom : 8}}>
+      <TouchableHighlight onPress={()=>navigation.navigate("Details", {isDark : false, gameDetails : item})}> 
+      <View style={{flexDirection : "row", backgroundColor : 'rgb(40, 40, 40)', borderRadius : 20, height : 120, width : "100%"}}>
+      <View style={{ alignContent : "center", justifyContent : "center", width : "48%", marginLeft : 30, marginRight : 12}}>
+      <Text style={isDark ? styles.gameTitle : styles.gameTitleDark}>{item.name} </Text>
       <View>
-      <Image style={{height : 200, width : "80%" , borderRadius :40}} source={{uri : item.images.original}}/>
       </View>
-      <View>
-      <Text style={isDark ? styles.text : styles.textDark}>Name: {item.name} </Text>
       </View>
-      <View>
+      <View style={{width : "48%",  marginTop : 10 }}>
+      <Image style={{height : 100, width : 100 , borderRadius :20,}} source={{uri : item.images.small}}/>
+      {/* </View>
+      <View> */}
+      </View>
+      </View>
+       </TouchableHighlight> 
+      {/* <View>
       <Text style={isDark ? styles.text : styles.textDark}>Description:{item.description}</Text>
+      </View> */}
       </View>
-      </View>
+   
   );
 
   const searchGames = async (input)=> {
     let queriedGames = [];
-    let response = await fetch(url + input + "&client_id=" + clientId + "&limit=3");
+    let response = await fetch(url + input + "&client_id=" + clientId + "fuzzy_match=true");
     if (response.status === 200){
       let gameSearch = await response.json();
       
       for (let game of gameSearch.games){
         let queriedGame = new boardGame(game.id, game.name, game.description_preview, game.images);
+
+        /*
+        A currently in-elegant solution to avoid adding undefined games to the query!
+        */
+        if (!queriedGame.key){
+          continue;
+        } else {
         queriedGames.push(queriedGame);
+        }
+
+
       }
-      setRefreshing(true);
-      console.log(":::::::::::::::::::::::::::::::")
-      setRefreshing(false);
+      console.log(queriedGames)
       seeBoardGames(queriedGames);
-      console.log(queriedGames[0].images.large);
     }
    
   }
@@ -65,20 +96,6 @@ export function SearchScreen({navigation, route}){
 
   return(
     <ScrollView style={isDark ? {backgroundColor : "white"} : {backgroundColor : "rgb(25, 25, 25)"}} refreshing={refreshing}>
-      <View style={styles.paragraph}>
-        <View>
-          <Text style={isDark ? styles.text : styles.textDark}>
-            {name}
-          </Text>
-        </View>
-        <View>
-          <Text style={isDark ? styles.text : styles.textDark}>
-            {description}
-          </Text>
-        </View>
-      </View>
-
-
       <View style={styles.paragraph}>
           <Text style={isDark ? styles.smallTitle : styles.smallTitleDark}> Search board games by Name!</Text>
           <View style={styles.colorTextBox}>
@@ -94,7 +111,7 @@ export function SearchScreen({navigation, route}){
           }}/>
      </View>
      <View style={styles.paragraph}>
-     <FlatList style={{flex : 1}}
+     <FlatList style={{flex : 1, width : "100%"}}
           data={boardGames}
           refreshing={refreshing}
           renderItem={renderItem}
@@ -122,7 +139,7 @@ const styles = StyleSheet.create({
   paragraph : {
     margin : 40,
     fontFamily : "Futura",
-    alignItems : "flex-start"
+    alignItems : "flex-start",
   },
   bigTitle :{
     fontFamily : "Futura",
@@ -145,13 +162,29 @@ const styles = StyleSheet.create({
     color : "black"
     
   },
+  gameTitle :{
+    textAlign : "left",
+    flexDirection :"row" , 
+    justifyContent: "flex-end",
+    fontFamily : "Futura",
+    fontSize : 20,
+    color : "black"
+  },
 
   smallTitleDark :{
     textAlign : "left",
     flexDirection :"row" , 
     justifyContent: "flex-end",
     fontFamily : "Futura",
-    fontSize : 20,
+    fontSize : 17,
+    color : "white"
+  },
+  gameTitleDark:{
+    textAlign : "left",
+    flexDirection :"row" , 
+    justifyContent: "flex-end",
+    fontFamily : "Futura",
+    fontSize : 17,
     color : "white"
   },
   fakeBox :{
@@ -178,10 +211,11 @@ const styles = StyleSheet.create({
     maxHeight : 200
   },
   text : {
-    color : "black"
+    color : "black",
   },
   textDark : {
-    color : "white"
+    color : "white",
+   
   },
   slider : {
     width : "75%",
@@ -216,7 +250,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    backgroundColor : "rgb(25, 25, 25)"
+    backgroundColor : "rgb(25, 25, 25)",
   },
   modalDark : {
 
