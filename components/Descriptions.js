@@ -1,23 +1,6 @@
-import React from 'react';
-import { Button, StyleSheet, Modal, Switch, ScrollView, FlatList, TextInput, Image, Text, View, Alert, TouchableHighlightBase} from 'react-native';
-import { TouchableHighlight } from 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { Button, StyleSheet, Modal, Switch, ScrollView, FlatList, TextInput, Image, Text, View, Alert, SectionList, TouchableHighlightBase, SafeAreaView} from 'react-native';
 
-export class Descriptions extends React.Component{
+export function Descriptions ({route, navigation}){
 
-    state = {
-      modalVisible : false,
-      description : ''
-    }
-
-    constructor(description, modalVisible){
-      this.description = description;
-      this.modalVisible = modalVisible;
-      this.setState({description : description, modalVisible : modalVisible});
-      console.log("modal clicked!")
-    }
-
-    render() {
-       
-    }
 }
-

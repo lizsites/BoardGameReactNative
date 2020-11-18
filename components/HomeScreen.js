@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { Button, StyleSheet, Modal, Switch, ScrollView, FlatList, TextInput, Image, Text, View, Alert, SectionList, TouchableHighlightBase} from 'react-native';
+import React, { useState } from 'react';
+import { Button, StyleSheet, Modal, Switch, ScrollView, FlatList, TextInput, Image, Text, View, Alert, SectionList, TouchableHighlightBase, SafeAreaView} from 'react-native';
 import Slider from '@react-native-community/slider';
 import {Picker} from '@react-native-picker/picker';
 import { TouchableHighlight } from 'react-native-gesture-handler';
@@ -16,146 +16,109 @@ function boardGame(key, name, description){
   
   
   
-  let data = [
+  const data = [
   new boardGame(1, "Gaia Project" , "Space euro game"), new boardGame(2, "War of the Ring" , "The best lord of the rings board gaame ever"), new boardGame(3,"Dominion" , "A fun card game!")
   ]
   
+  const extraData = []
   
 
-export class HomeScreen extends React.Component{
-        state ={
-          modalVisible : false,
-          userInput : 'name',
-          userDescription : "description",
-          sliderInput : 0,
-          gameData : data,
-          isEnabled : false
-    
+export function HomeScreen ({navigation, route}){
+          const {isDark} = route.params;
+          const [modalVisible, setVisible] = useState(false);
+          const [userInput,setName] = useState('name');
+          const [userDescription, setDescription] = useState("description");
+          const [gameData, setGameData]  = useState(data);
+          const [gameDescription, seeGameDescription] = useState('')
+          const [refreshing, setRefreshing] = useState(false);
+          const [gameKey,setGameKey] = useState(gameData.length +1);
+
+     
+        const addBoardGame = ()=>{
+          
+          setRefreshing(true);
+          extraData.push(new boardGame((gameKey),userInput,userDescription));
+          let allGames = data.concat(extraData);
+          setGameData(allGames);
+          setGameKey(allGames.length +1);
+          setRefreshing(false);
+
         }
-        toggleSwitch = () => this.setState({isEnabled : !this.state.isEnabled});
-        addBoardGame = ()=>{
-          let game = new boardGame((data.length +1), this.state.userInput, this.state.userDescription);
-          data.push(game);
-          console.log(data);
-          this.setState({data : data});
-        }
     
-        renderItem = ({item})=> (<View>
+        const renderItem = ({item})=> (
+        <View>
           <TouchableHighlight onPress={()=>{
-            this.setState({modalVisible : true})
-            this.setState({description : item.description})
+            seeGameDescription(item.description);
+            navigation.navigate("Search Screen", {isDark : isDark, name : item.name, description : item.description});
           }}>
-          <Text style={this.state.isEnabled ? styles.smallTitle : styles.smallTitleDark}>{item.name}</Text>
+          <Text style={isDark ? styles.smallTitle : styles.smallTitleDark}>{item.key}. {item.name}</Text>
           </TouchableHighlight>
         </View>);
       
     
-      render (){
+   
        
         
       return (
-        <ScrollView style={this.state.isEnabled ? {backgroundColor : "white"} : {backgroundColor : "rgb(25, 25, 25)"}}>
+        <ScrollView 
+        style={isDark ? {backgroundColor : "white"} : {backgroundColor : "rgb(25, 25, 25)"}}
+        refreshing={true}
+        >
        
-        <View style={this.state.isEnabled ? styles.whiteMode : styles.darkMode}>
+        <View style={isDark ? styles.whiteMode : styles.darkMode}>
         <View style={{ justifyContent: "flex-end" , margin : 40 }}>
-          <Text h1 style={this.state.isEnabled ? styles.bigTitle : styles.bigTitleDark}>Welcome</Text>
-          <Text h4 style={this.state.isEnabled ? styles.text : styles.textDark}>to the proof that I kind of know React Native</Text>
+          <Text h1 style={isDark ? styles.bigTitle : styles.bigTitleDark}>Welcome</Text>
+          <Text h4 style={isDark ? styles.text : styles.textDark}>to the proof that I kind of know React Native</Text>
           </View>
          
          
           <Image style={{ maxHeight : 200, maxWidth : "80%" , borderRadius :40 }} source={ require("../assets/14Remington3-superJumbo.jpg")}/>
           <View style={styles.paragraph}>
-          <Text style={this.state.isEnabled ? styles.text : styles.textDark}>This is the home screen now!!!</Text>
-          <Text style={this.state.isEnabled ? styles.text : styles.textDark}><Text>I am the most text!</Text><Text> I am text as well.</Text></Text>
+          <Text style={isDark ? styles.text : styles.textDark}>This is the home screen now!!!</Text>
+          <Text style={isDark ? styles.text : styles.textDark}><Text>I am the most text!</Text><Text> I am text as well.</Text></Text>
           </View>
-        
-          
-          
-         
-    
         <View style={styles.paragraph}>
-          <Text style={this.state.isEnabled ? styles.smallTitle : styles.smallTitleDark}> Name </Text>
+          <Text style={isDark ? styles.smallTitle : styles.smallTitleDark}> Name </Text>
           <View style={styles.colorTextBox}>
               <TextInput 
               style={styles.textBox}
-              value={this.state.userInput}
+              value={userInput}
               multiline={true}
-              onChangeText={text => this.setState({userInput : text})}
+              onChangeText={text => setName(text)}
               />
           </View>
-          <Text style={this.state.isEnabled ? styles.smallTitle : styles.smallTitleDark}> Description</Text>
+          <Text style={isDark ? styles.smallTitle : styles.smallTitleDark}> Description</Text>
           <View style={styles.colorTextBox}>
               <TextInput 
               style={styles.textBox}
-              value={this.state.userDescription}
+              value={userDescription}
               multiline={true}
-              onChangeText={text => this.setState({userDescription : text})}
+              onChangeText={text => setDescription(text)}
               />
           </View>
           </View>
           <View style={styles.paragraph}>
-           <Button title="Add Board Game" onPress= {this.addBoardGame}/>
+           <Button title="Add Board Game" onPress= {addBoardGame}/>
           </View>
       
           
-        <View style={{width : "100%" , justifyContent : "center" , alignItems : "center"}}>
-          <Slider 
-        style={styles.slider} 
-        step="1" 
-        minimumValue={0} 
-        maximumValue={84} 
-        value={this.state.sliderInput} 
-        onValueChange={sliderInput =>this.setState({sliderInput : sliderInput})}>
-        </Slider>
-        <Text style={this.state.isEnabled ? styles.text : styles.textDark}>
-          {this.state.sliderInput}
-          </Text>
-        </View>
         
-        <View style={styles.paragraph}>
-        <Switch 
-        trackColor={{false: 'yellow', true : 'green'}}
-        thumbColor={'white'}
-        ios_backgroundColor="grey"
-        onValueChange={this.toggleSwitch}
-        value={this.state.isEnabled}
-        />
-        </View>
     
         <View style={styles.paragraph}>
           <FlatList style={{height : 100}}
-          data={this.state.gameData}
-          renderItem={this.renderItem}
+          data={gameData}
+          refreshing={refreshing}
+          renderItem={renderItem}
           keyExtractor = {item => item.key.toString()}
           extraData={true}
           />
         </View>
-        
           <StatusBar style="auto" />
+          </View>
+          <View style={{marginTop: 200, height : "20%", position : "relative"}}>
+          <Button  title="Go to Settings" onPress={()=>{
+            navigation.navigate("Settings", {isDark : isDark})}}/>
         </View>
-        <View style={{flex : 0.3, marginBottom : 500, position : "relative"}}>
-        <Button  title="Go to Settings" onPress={()=>{
-            this.props.navigation.navigate("Settings")
-
-        }}/>
-        </View>
-        <Modal 
-            animationType="slide" 
-            transparent={true} 
-            visible={this.state.modalVisible} 
-            >
-                <View style={styles.centeredView}>
-                <View style={styles.modal}>
-                <Text style={styles.textDark}>{this.state.description}</Text>
-                <Button
-                onPress={()=>{
-                  this.setState({modalVisible : !this.state.modalVisible})
-                }}
-                  style = {styles.textDark} title={"Click to Hide"}/>
-               
-                </View>
-              </View>
-            </Modal>
         
         </ScrollView>
     
@@ -163,7 +126,7 @@ export class HomeScreen extends React.Component{
        
     
       );
-      }
+      
     }
 
     const styles = StyleSheet.create({

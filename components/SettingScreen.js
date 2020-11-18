@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, {useState} from 'react';
 import { Button, StyleSheet, Modal, Switch, ScrollView, FlatList, TextInput, Image, Text, View, Alert, SectionList, TouchableHighlightBase} from 'react-native';
 import Slider from '@react-native-community/slider';
 import {Picker} from '@react-native-picker/picker';
@@ -7,38 +7,33 @@ import { TouchableHighlight } from 'react-native-gesture-handler';
 import { createStackNavigator } from '@react-navigation/stack'
 
 
-export class SettingScreen extends React.Component {
+export function SettingScreen({navigation, route}) {
     
     
 
-    state ={
-        modalVisible : false,
-        sliderInput : 0,
-        isEnabled : false
-  
-      }
-    toggleSwitch = () => {
+        let {isDark} = route.params;
+        const [modalVisible, setModalVisible] = useState(false);
+        const [sliderInput, inputSlider] = useState(0);
+        const [isEnabled, setDark] = useState(isDark);
         
-    this.setState({isEnabled : !this.state.isEnabled})
-    
-};
-
-    render (){
-       
+      
+      const toggleSwitch = () => {
+      setDark(!isEnabled)
+      };
 
         return(
-            <View style={this.state.isEnabled ? styles.whiteMode : styles.centeredView}>
+            <View style={isEnabled ? styles.whiteMode : styles.centeredView}>
             <View style={{width : "100%" , justifyContent : "center" , alignItems : "center"}}>
             <Slider 
           style={styles.slider} 
           step="1" 
           minimumValue={0} 
           maximumValue={84} 
-          value={this.state.sliderInput} 
-          onValueChange={sliderInput =>this.setState({sliderInput : sliderInput})}>
+          value={sliderInput} 
+          onValueChange={sliderInput =>inputSlider(sliderInput)}>
           </Slider>
-          <Text style={this.state.isEnabled ? styles.text : styles.textDark}>
-            {this.state.sliderInput}
+          <Text style={isEnabled? styles.text : styles.textDark}>
+            {sliderInput}
             </Text>
           </View>
           
@@ -47,20 +42,21 @@ export class SettingScreen extends React.Component {
           trackColor={{false: 'yellow', true : 'green'}}
           thumbColor={'white'}
           ios_backgroundColor="grey"
-          onValueChange={this.toggleSwitch}
-          value={this.state.isEnabled}
+          onValueChange={toggleSwitch}
+          value={isEnabled}
           />
           </View>
 
           <View style={styles.paragraph}>
-            <Button title="Go Back" onPress={()=>{
-                this.props.navigation.navigate("Home" , {isEnabled : this.state.isEnabled})
+            <Button title="Go Back" onPress={()=>{              
+              navigation.navigate("Home" , {isDark: isEnabled})
             }}/>
           </View>
           </View>
         );
-    }
 }
+
+
 
 
 const styles = StyleSheet.create({
